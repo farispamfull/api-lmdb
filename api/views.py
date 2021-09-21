@@ -2,7 +2,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, filters, mixins
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
@@ -11,10 +11,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from users.models import User
 from .filters import TitleFilter
-from .models import Title
+from .models import Title, Category, Genre
 from .permissions import ReadOnly
 from .serializer import (SignUpSerializer, TokenSerializer, TitleSerializer,
-                         TitlePostSerializer)
+                         TitlePostSerializer,GenreSerializer,CategoryListSerializer)
 from .utils import send_token_for_user
 
 
@@ -71,3 +71,30 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'retrieve'):
             return TitleSerializer
         return TitlePostSerializer
+
+
+class BaseCreateViewSet(mixins.ListModelMixin,
+                        mixins.CreateModelMixin,
+                        mixins.DestroyModelMixin,
+                        viewsets.GenericViewSet):
+    pass
+
+
+class GenreViewSet(BaseCreateViewSet):
+    serializer_class = GenreSerializer
+    queryset = Genre.objects.all()
+    permission_classes = [IsAuthenticated & IsAdminUser | ReadOnly]
+    pagination_class = PageNumberPagination
+    filter_backends = [filters.SearchFilter]
+    lookup_field = 'slug'
+    search_fields = ['=name']
+
+
+class CategoryViewSet(BaseCreateViewSet):
+    serializer_class = CategoryListSerializer
+    queryset = Category.objects.all()
+    permission_classes = [IsAuthenticated & IsAdminUser | ReadOnly]
+    pagination_class = PageNumberPagination
+    filter_backends = [filters.SearchFilter]
+    lookup_field = 'slug'
+    search_fields = ['=name']
