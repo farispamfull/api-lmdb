@@ -27,16 +27,18 @@ class SignUpApiView(APIView):
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
+        user = User.objects.filter(username=request.data.get('username'),
+                                   email=request.data.get('email'))
+        if user:
+            user = user[0]
+            send_token_for_user(request, user)
+            return Response({'email': user.email}, status=status.HTTP_200_OK)
+
         serializer.is_valid(raise_exception=True)
-        email = serializer.validated_data['email']
-        username = serializer.validated_data['username']
-        user, _ = User.objects.get_or_create(
-            email=email, username=username,
-            is_active=False
-        )
+        user = serializer.save(is_active=True)
         send_token_for_user(request, user)
 
-        return Response({'email': email}, status=status.HTTP_200_OK)
+        return Response({'email': user.email}, status=status.HTTP_200_OK)
 
 
 class EmailConfirmationView(APIView):
