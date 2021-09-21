@@ -8,10 +8,10 @@ def send_token_for_user(request, user):
     token = default_token_generator.make_token(user)
     current_site = get_current_site(request)
     email = user.email
-    send_mail(
-        f'{current_site.domain} | Confirmation code',
-        f'Confirmation code: {token}'
-        f'{settings.EMAIL_FROM}@{current_site.domain}',
-        [email],
-        fail_silently=False,
-    )
+    mail_subject = f'{current_site.domain} | Confirmation code'
+    send_mail(mail_subject,
+              f'Confirmation code: {token}',
+              f'{settings.EMAIL_FROM}@{current_site.domain}',
+              [email],
+              fail_silently=False,
+              )

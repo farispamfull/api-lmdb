@@ -17,23 +17,23 @@ class Test04TitleAPI:
         )
 
     @pytest.mark.django_db(transaction=True)
-    def test_02_title_admin(self, admin_client):
-        genres = create_genre(admin_client)
-        categories = create_categories(admin_client)
+    def test_02_title(self, user_client):
+        genres = create_genre(user_client)
+        categories = create_categories(user_client)
         data = {}
-        response = admin_client.post('/api/v1/titles/', data=data)
+        response = user_client.post('/api/v1/titles/', data=data)
         assert response.status_code == 400, (
             'Проверьте, что при POST запросе `/api/v1/titles/` с не правильными данными возвращает статус 400'
         )
         data = {'name': 'Поворот туда', 'year': 2000, 'genre': [genres[0]['slug'], genres[1]['slug']],
                 'category': categories[0]['slug'], 'description': 'Крутое пике'}
-        response = admin_client.post('/api/v1/titles/', data=data)
+        response = user_client.post('/api/v1/titles/', data=data)
         assert response.status_code == 201, (
             'Проверьте, что при POST запросе `/api/v1/titles/` с правильными данными возвращает статус 201'
         )
         data = {'name': 'Проект', 'year': 2020, 'genre': [genres[2]['slug']], 'category': categories[1]['slug'],
                 'description': 'Главная драма года'}
-        response = admin_client.post('/api/v1/titles/', data=data)
+        response = user_client.post('/api/v1/titles/', data=data)
         assert response.status_code == 201, (
             'Проверьте, что при POST запросе `/api/v1/titles/` с правильными данными возвращает статус 201'
         )
@@ -41,7 +41,7 @@ class Test04TitleAPI:
             'Проверьте, что при POST запросе `/api/v1/titles/` возвращаете данные созданного объекта. '
             'Значение `id` нет или не является целым числом.'
         )
-        response = admin_client.get('/api/v1/titles/')
+        response = user_client.get('/api/v1/titles/')
         assert response.status_code == 200, (
             'Проверьте, что при GET запросе `/api/v1/titles/` возвращает статус 200'
         )
@@ -114,41 +114,31 @@ class Test04TitleAPI:
         )
         data = {'name': 'Поворот', 'year': 2020, 'genre': [genres[1]['slug']],
                 'category': categories[1]['slug'], 'description': 'Крутое пике'}
-        admin_client.post('/api/v1/titles/', data=data)
-        response = admin_client.get(f'/api/v1/titles/?genre={genres[1]["slug"]}')
+        user_client.post('/api/v1/titles/', data=data)
+        response = user_client.get(f'/api/v1/titles/?genre={genres[1]["slug"]}')
         data = response.json()
         assert len(data['results']) == 2, (
             'Проверьте, что при GET запросе `/api/v1/titles/` фильтуется по `genre` параметру `slug` жанра'
         )
-        response = admin_client.get(f'/api/v1/titles/?category={categories[0]["slug"]}')
+        response = user_client.get(f'/api/v1/titles/?category={categories[0]["slug"]}')
         data = response.json()
         assert len(data['results']) == 1, (
             'Проверьте, что при GET запросе `/api/v1/titles/` фильтуется по `category` параметру `slug` категории'
         )
-        response = admin_client.get('/api/v1/titles/?year=2000')
+        response = user_client.get('/api/v1/titles/?year=2000')
         data = response.json()
         assert len(data['results']) == 1, (
             'Проверьте, что при GET запросе `/api/v1/titles/` фильтуется по `year` параметру года'
         )
-        response = admin_client.get('/api/v1/titles/?name=Поворот')
+        response = user_client.get('/api/v1/titles/?name=Поворот')
         data = response.json()
         assert len(data['results']) == 2, (
             'Проверьте, что при GET запросе `/api/v1/titles/` фильтуется по `name` параметру названия'
         )
-        invalid_data = {
-            'name': 'Поворот', 'year': 'дветыщи шесть', 'genre': [genres[1]['slug']],
-            'category': categories[1]['slug'], 'description': 'Крутое пике'
-        }
-        response = admin_client.post('/api/v1/titles/', data=invalid_data)
-        code = 400
-        assert response.status_code == code, (
-            'Проверьте, что при POST запросе `/api/v1/titles/`, поле year валидируется '
-            'и при передаче некорректного значения, возвращается статус 400'
-        )
 
     @pytest.mark.django_db(transaction=True)
-    def test_03_titles_detail(self, client, admin_client):
-        titles, categories, genres = create_titles(admin_client)
+    def test_03_titles_detail(self, client, user_client):
+        titles, categories, genres = create_titles(user_client)
         response = client.get(f'/api/v1/titles/{titles[0]["id"]}/')
         assert response.status_code != 404, (
             'Страница `/api/v1/titles/{title_id}/` не найдена, проверьте этот адрес в *urls.py*'
@@ -174,7 +164,7 @@ class Test04TitleAPI:
             'name': 'Новое название',
             'category': categories[1]['slug']
         }
-        response = admin_client.patch(f'/api/v1/titles/{titles[0]["id"]}/', data=data)
+        response = user_client.patch(f'/api/v1/titles/{titles[0]["id"]}/', data=data)
         assert response.status_code == 200, (
             'Проверьте, что при PATCH запросе `/api/v1/titles/{title_id}/` возвращается статус 200'
         )
@@ -183,7 +173,7 @@ class Test04TitleAPI:
             'Проверьте, что при PATCH запросе `/api/v1/titles/{title_id}/` возвращаете данные объекта. '
             'Значение `name` изменено.'
         )
-        response = admin_client.get(f'/api/v1/titles/{titles[0]["id"]}/')
+        response = user_client.get(f'/api/v1/titles/{titles[0]["id"]}/')
         assert response.status_code == 200, (
             'Проверьте, что при GET запросе `/api/v1/titles/{title_id}/` '
             'без токена авторизации возвращается статус 200'
@@ -196,11 +186,11 @@ class Test04TitleAPI:
             'Проверьте, что при PATCH запросе `/api/v1/titles/{title_id}/` изменяете значение `name`.'
         )
 
-        response = admin_client.delete(f'/api/v1/titles/{titles[0]["id"]}/')
+        response = user_client.delete(f'/api/v1/titles/{titles[0]["id"]}/')
         assert response.status_code == 204, (
             'Проверьте, что при DELETE запросе `/api/v1/titles/{title_id}/` возвращаете статус 204'
         )
-        response = admin_client.get('/api/v1/titles/')
+        response = user_client.get('/api/v1/titles/')
         test_data = response.json()['results']
         assert len(test_data) == len(titles) - 1, (
             'Проверьте, что при DELETE запросе `/api/v1/titles/{title_id}/` удаляете объект'
@@ -227,8 +217,8 @@ class Test04TitleAPI:
         )
 
     @pytest.mark.django_db(transaction=True)
-    def test_04_titles_check_permission(self, client, admin_client):
-        titles, categories, genres = create_titles(admin_client)
+    def test_04_titles_check_permission(self, client, user_client):
+        titles, categories, genres = create_titles(user_client)
         data = {'name': 'Чудо юдо', 'year': 1999, 'genre': [genres[2]['slug'], genres[1]['slug']],
                 'category': categories[0]['slug'], 'description': 'Бум'}
         response = client.post('/api/v1/titles/', data=data)
@@ -246,6 +236,6 @@ class Test04TitleAPI:
             'Проверьте, что при DELETE запросе `/api/v1/titles/{{title_id}}/` '
             'без токена авторизации возвращается статус 401'
         )
-        user, moderator = create_users_api(admin_client)
+        user, moderator = create_users_api(user_client)
         self.check_permissions(user, 'обычного пользователя', titles, categories, genres)
         self.check_permissions(moderator, 'модератора', titles, categories, genres)
