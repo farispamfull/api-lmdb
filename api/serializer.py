@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Title, Category, Genre, User
+from .models import Title, Category, Genre, User, Comment, Review
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -54,3 +54,33 @@ class TitlePostSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'name', 'year', 'description', 'genre', 'category'
         )
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field='username', read_only=True)
+    title = serializers.SlugRelatedField(
+        slug_field='id', read_only=True)
+    score = serializers.IntegerField(min_value=1, max_value=10)
+
+    def validate(self, data):
+        if self.context['request'].method == 'POST':
+            review = Review.objects.filter(author=self.context['request'].user,
+                                           title=self.context['view'].kwargs[
+                                               'title_id'])
+            if review.exists():
+                raise serializers.ValidationError('Not Allowed')
+        return data
+
+    class Meta:
+        model = Review
+        fields = ('id', 'text', 'author', 'title', 'score', 'pub_date',)
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field='username', read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'text', 'author', 'pub_date',)
