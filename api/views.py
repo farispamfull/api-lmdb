@@ -37,7 +37,7 @@ class EmailConfirmation(APIView):
         return str(refresh.access_token)
 
     def post(self, request):
-        serializer = TokenSerializer(request.data)
+        serializer = self.serializer_class(request.data)
         serializer.is_valid(raise_exception=True)
         user = get_object_or_404(User, email=serializer.data['email'])
         confirmation_code = serializer.data['confirmation_code']
@@ -47,5 +47,5 @@ class EmailConfirmation(APIView):
             token = self.get_token(user)
             Response({'token': token}, status=status.HTTP_200_OK)
 
-        response = {'confirmation_code': 'Invalid confirmation code'}
+        response = {'confirmation_code': 'invalid confirmation code'}
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
