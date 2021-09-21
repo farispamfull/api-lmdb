@@ -18,8 +18,8 @@ class User(AbstractUser):
     email = models.EmailField(max_length=254, unique=True)
     role = models.CharField(max_length=10, blank=True,
                             choices=UserRoles.choices, default=UserRoles.USER)
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['email', ]
+
+    REQUIRED_FIELDS = ('email',)
 
     @property
     def is_admin(self):

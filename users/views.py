@@ -12,7 +12,7 @@ class UserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdministratorPermission,]
+    permission_classes = [IsAdministratorPermission, ]
 
     @action(detail=False, methods=['get', 'patch'],
             permission_classes=[IsAuthenticated])
