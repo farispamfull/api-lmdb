@@ -8,7 +8,6 @@ from .permissions import IsAdministratorPermission
 from .serializers import UserSerializer
 
 
-
 class UserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     queryset = User.objects.all()
@@ -19,8 +18,7 @@ class UserViewSet(viewsets.ModelViewSet):
             permission_classes=[IsAuthenticated])
     def me(self, request):
         if request.method == 'GET':
-            print(request.user.profile)
-            serializer = UserSerializer(request.user.profile)
+            serializer = UserSerializer(request.user)
             return Response(serializer.data)
         serializer = self.get_serializer(request.user, data=request.data,
                                          partial=True)
