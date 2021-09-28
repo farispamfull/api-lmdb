@@ -25,9 +25,39 @@ REST API для сервиса ***YaMDb**
 
 [Полная документация API (redoc.yaml)](https://github.com/farispamfull/api_lmdb/blob/main/static/redoc.yaml)
 
+## Запуск (docker)
+
+создайте файл .env и поместите в корневую папку проекта.
+
+Создайте в нем переменные окружения:
+```
+DEBUG=False
+SECRET_KEY=Сгенерируйте ключ
+DB_ENGINE=django.db.backends.postgresql
+DB_NAME=postgresql
+POSTGRES_USER=postgresql
+POSTGRES_PASSWORD=postgresql
+DB_HOST=db
+DB_PORT=5432
+```
+Запустите docker-compose:
+```
+docker-compose up -d
+```
+
 При первом запуске для функционирования проекта обязательно выполнить миграции:
 
-`./ manage.py makemigrations` 
+```
+docker-compose exec web python manage.py makemigration
+docker-compose exec web python manage.py migrate
+```
 
-`./ manage.py migrate`
+Соберите статику:
+```
+docker-compose exec yamdb python manage.py collectstatic --no-input
+```
+При необходимости загрузите в базу данные: 
 
+```
+docker-compose exec yamdb python manage.py loaddata data/fixtures.json
+```

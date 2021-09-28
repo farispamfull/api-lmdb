@@ -5,8 +5,8 @@ from datetime import timedelta
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DB_ENGINE')
-DEBUG = os.getenv('DEBUG', 'True')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'key')
+DEBUG = os.getenv('DEBUG') or False
 
 ALLOWED_HOSTS = ['*']
 
@@ -106,8 +106,8 @@ SIMPLE_JWT = {
 
 }
 AUTHENTICATION_BACKENDS = (
-        'django.contrib.auth.backends.ModelBackend',
-    )
+    'django.contrib.auth.backends.ModelBackend',
+)
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
 EMAIL_FROM = "info"
